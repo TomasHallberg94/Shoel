@@ -1,0 +1,127 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ShoppingCart } from "lucide-react";
+
+const products = [
+  {
+    id: 1,
+    name: "Gold Accent Sneaker",
+    price: 1299,
+    stripePriceId: "price_ABC123", // ← Ersätt med riktig Price ID
+    image: "/images/shoel-white-gold.png",
+    description: "Elegant vit sneaker med gulddetaljer – perfekt balans mellan komfort och stil."
+  },
+  {
+    id: 2,
+    name: "Black Prestige Sneaker",
+    price: 1399,
+    stripePriceId: "price_DEF456", // ← Ersätt med riktig Price ID
+    image: "/images/shoel-black-gold.png",
+    description: "Lyxig svart sneaker med exklusiva gulddetaljer – gå med självförtroende."
+  }
+];
+
+export default function ShoelStore() {
+  const [cart, setCart] = useState([]);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  const addToCart = (product) => {
+    setCart([...cart, product]);
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+  const handleCheckout = async () => {
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          items: cart.map((item) => ({
+            price: item.stripePriceId,
+            quantity: 1
+          }))
+        })
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Fel vid checkout:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white px-4 py-8">
+      <header className="text-center mb-10">
+        <h1 className="text-4xl font-serif text-black">shoel</h1>
+        <p className="text-sm uppercase text-gold-500 tracking-widest">Walk with success</p>
+      </header>
+
+      <section className="mb-16">
+        <h2 className="text-2xl font-semibold mb-4 text-center">Produkter</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {products.map(product => (
+            <Card key={product.id} className="rounded-2xl shadow-lg border border-gray-100">
+              <img src={product.image} alt={product.name} className="w-full h-64 object-cover rounded-t-2xl" />
+              <CardContent className="p-4 space-y-2">
+                <h3 className="text-xl font-semibold text-black">{product.name}</h3>
+                <p className="text-gray-600 text-sm">{product.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-black">{product.price} kr</span>
+                  <div className="flex gap-2">
+                    <Button onClick={() => addToCart(product)} className="bg-black text-white flex items-center gap-2">
+                      <ShoppingCart size={16} /> Lägg i kundvagn
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-3xl mx-auto mb-16">
+        <h2 className="text-2xl font-semibold mb-4 text-center">Kundvagn</h2>
+        {cart.length === 0 ? (
+          <p className="text-center text-gray-500">Din kundvagn är tom.</p>
+        ) : (
+          <>
+            <ul className="space-y-2">
+              {cart.map((item, index) => (
+                <li key={index} className="flex justify-between border-b py-2">
+                  <span>{item.name}</span>
+                  <span>{item.price} kr</span>
+                </li>
+              ))}
+              <li className="flex justify-between font-bold border-t pt-2">
+                <span>Totalt:</span>
+                <span>{total} kr</span>
+              </li>
+            </ul>
+            <div className="text-center mt-4">
+              <Button className="bg-green-600 text-white px-6 py-2 rounded-xl" onClick={handleCheckout}>
+                Slutför köp
+              </Button>
+              {checkoutSuccess && (
+                <p className="text-green-700 mt-2">Tack för ditt köp! En bekräftelse har skickats till din e-post.</p>
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="max-w-3xl mx-auto mb-16">
+        <h2 className="text-2xl font-semibold mb-4 text-center">Om oss</h2>
+        <p className="text-gray-700 text-center">
+          Shoel är ett svenskt varumärke som kombinerar lyxig design med tidlös funktionalitet.
+          Våra sneakers är skapade för dem som vill gå med stil och självförtroende.
+        </p>
+      </section>
+    </div>
+  );
+}
