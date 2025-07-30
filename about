@@ -1,0 +1,13 @@
+import React from "react";
+
+export default function AboutSection() {
+  return (
+    <section className="max-w-3xl mx-auto mb-16">
+      <h2 className="text-2xl font-semibold mb-4 text-center">Om oss</h2>
+      <p className="text-gray-700 text-center">
+        Shoel är ett svenskt varumärke som kombinerar lyxig design med tidlös funktionalitet.
+        Våra sneakers är skapade för dem som vill gå med stil och självförtroende.
+      </p>
+    </section>
+  );
+}
