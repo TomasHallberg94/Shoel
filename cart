@@ -1,0 +1,58 @@
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { MinusCircle, PlusCircle, Trash2 } from "lucide-react";
+import { formatPrice } from "@/utils/formatPrice";
+
+export default function Cart({
+  cart,
+  onDecrement,
+  onIncrement,
+  onRemove,
+  onCheckout,
+  total,
+  checkoutSuccess
+}) {
+  return (
+    <section className="max-w-3xl mx-auto mb-16">
+      <h2 className="text-2xl font-semibold mb-4 text-center">Kundvagn</h2>
+      {cart.length === 0 ? (
+        <p className="text-center text-gray-500">Din kundvagn är tom.</p>
+      ) : (
+        <>
+          <ul className="space-y-2">
+            {cart.map(item => (
+              <li key={item.id} className="flex justify-between items-center border-b py-2">
+                <span className="flex-1">{item.name}</span>
+                <div className="flex items-center gap-2">
+                  <Button size="icon" variant="ghost" onClick={() => onDecrement(item.id)} title="Minska">
+                    <MinusCircle size={18} />
+                  </Button>
+                  <span>{item.quantity}</span>
+                  <Button size="icon" variant="ghost" onClick={() => onIncrement(item.id)} title="Öka">
+                    <PlusCircle size={18} />
+                  </Button>
+                </div>
+                <span className="w-24 text-right">{formatPrice(item.price * item.quantity)}</span>
+                <Button size="icon" variant="ghost" onClick={() => onRemove(item.id)} title="Ta bort">
+                  <Trash2 size={18} />
+                </Button>
+              </li>
+            ))}
+            <li className="flex justify-between font-bold border-t pt-2">
+              <span>Totalt:</span>
+              <span>{formatPrice(total)}</span>
+            </li>
+          </ul>
+          <div className="text-center mt-4">
+            <Button className="bg-green-600 text-white px-6 py-2 rounded-xl" onClick={onCheckout}>
+              Slutför köp
+            </Button>
+            {checkoutSuccess && (
+              <p className="text-green-700 mt-2">Tack för ditt köp! En bekräftelse har skickats till din e-post.</p>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
