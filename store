@@ -1,0 +1,113 @@
+import React, { useState } from "react";
+import ProductList from "@/components/ProductList";
+import Cart from "@/components/Cart";
+import AboutSection from "@/components/AboutSection";
+
+const products = [
+  {
+    id: 1,
+    name: "Gold Accent Sneaker",
+    price: 1299,
+    stripePriceId: "price_ABC123",
+    image: "/images/shoel-white-gold.png",
+    description: "Elegant vit sneaker med gulddetaljer – perfekt balans mellan komfort och stil."
+  },
+  {
+    id: 2,
+    name: "Black Prestige Sneaker",
+    price: 1399,
+    stripePriceId: "price_DEF456",
+    image: "/images/shoel-black-gold.png",
+    description: "Lyxig svart sneaker med exklusiva gulddetaljer – gå med självförtroende."
+  }
+];
+
+export default function ShoelStore() {
+  const [cart, setCart] = useState([]);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existing = prevCart.find(item => item.id === product.id);
+      if (existing) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(cart => cart.filter(item => item.id !== productId));
+  };
+
+  const decrementItem = (productId) => {
+    setCart(cart =>
+      cart
+        .map(item =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
+
+  const incrementItem = (productId) => {
+    setCart(cart =>
+      cart.map(item =>
+        item.id === productId
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      )
+    );
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handleCheckout = async () => {
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          items: cart.map((item) => ({
+            price: item.stripePriceId,
+            quantity: item.quantity
+          }))
+        })
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Fel vid checkout:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white px-4 py-8">
+      <header className="text-center mb-10">
+        <h1 className="text-4xl font-serif text-black">shoel</h1>
+        <p className="text-sm uppercase text-gold-500 tracking-widest">Walk with success</p>
+      </header>
+      <ProductList products={products} onAddToCart={addToCart} />
+      <Cart
+        cart={cart}
+        onDecrement={decrementItem}
+        onIncrement={incrementItem}
+        onRemove={removeFromCart}
+        onCheckout={handleCheckout}
+        total={total}
+        checkoutSuccess={checkoutSuccess}
+      />
+      <AboutSection />
+    </div>
+  );
+}
